@@ -1,0 +1,179 @@
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta charset="UTF-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <style> body {padding: 0; margin: 0;} </style>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+<div class="g-game__card-group">
+</div>
+<style>
+
+body {
+
+    background: url(BG.png);
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+.g-game__card-group {
+/*   border: 10px solid gray; */
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* entire container, keeps perspective */
+.g-game__card-container {
+  padding: 20px;
+	perspective: 1000px;
+}
+	.g-game__card-container.flipped
+  .g-game__card {
+		transform: rotateY(180deg);
+	}
+
+.g-game__card-container,
+.g-game__card-image--back,
+.g-game__card-image--front {
+  width: 150px;
+  height: 150px;
+}
+
+.g-game__card {
+	transition: 0.6s;
+	transform-style: preserve-3d;
+	position: relative;
+
+  background-color: darkgray;
+  width: 160px;
+}
+
+.g-game__card-image--back,
+.g-game__card-image--front {
+	backface-visibility: hidden;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.g-game__card-image--back {
+	z-index: 2;
+  border: 5px solid black;
+  -webkit-transform: rotate(0deg);
+	transform: rotateY(0deg);
+}
+
+.g-game__card-image--front {
+  border: 5px solid black;
+  -webkit-transform: rotate(180deg);
+	transform: rotateY(180deg);
+}
+
+.matched img {
+  background-image: url("bg.png");
+}
+
+
+</style>
+
+<script>
+
+(function() { // IIFE
+  var backCard = "cardBackGround.png";
+    var baseCardUrl = "https://s3-us-west-2.amazonaws.com/s.cdpn.io/74196/"
+  	var cards = [
+      { img: "3.png", id: 1},
+      { img: "2.png", id: 2},
+      { img: "4.png", id: 3},
+
+    ];
+  var flipCount = 0;
+  var flipSet = [];
+
+  function shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex;
+
+    while (0 !== currentIndex) {
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
+      temporaryValue = array[currentIndex];
+      array[currentIndex] = array[randomIndex];
+      array[randomIndex] = temporaryValue;
+    }
+    return array;
+  }
+
+  function createCardElement(card) {
+    var cardContainer = document.createElement("div");
+    var cardEl = document.createElement("div");
+    var cardFront = document.createElement("img");
+    var cardBack = document.createElement("img");
+
+    cardContainer.className = "g-game__card-container";
+    cardContainer.dataset.id = card.id;
+    cardContainer.dataset.name = card.name;
+
+    cardEl.className = "g-game__card";
+
+    cardFront.classList.add("g-game__card-image--front");
+    cardFront.src = card.img;
+
+    cardBack.classList.add("g-game__card-image--back");
+    cardBack.src = backCard;
+
+    cardEl.appendChild(cardFront);
+    cardEl.appendChild(cardBack);
+    cardContainer.appendChild(cardEl);
+
+    return cardContainer;
+
+  }
+
+  function flipCard(event) {
+    var elem = event.srcElement.parentElement.parentElement
+    elem.classList.toggle("flipped");
+    flipCount += 1;
+    flipSet.push(elem)
+
+    if (flipCount == 2) {
+      checkMatch();
+    }
+  }
+
+  function checkMatch() {
+    var flipSetCopy = flipSet;
+    flipCount = 0;
+    flipSet = [];
+    if (flipSetCopy[0].dataset.id === flipSetCopy[1].dataset.id && flipSetCopy[0] !== flipSetCopy[1] ) {
+      setTimeout(function(){
+        flipSetCopy.forEach(function(elem) {
+          elem.classList.add('matched');
+          elem.removeEventListener('click', flipCard, false)
+        });
+      }, 1000)
+    } else {
+      setTimeout(function(){
+        flipSetCopy.forEach(function(elem) {
+          elem.classList.toggle("flipped");
+        });
+      }, 1000)
+
+    }
+
+  }
+
+  // execution starts!
+  var cardGroup = document.getElementsByClassName("g-game__card-group")[0];
+
+  firstSet = shuffle(cards);
+  secondSet = shuffle(cards);
+  totalSet = firstSet.concat(secondSet);
+  totalSet = shuffle(totalSet);
+
+  totalSet.forEach(function(card) {
+    var newCard = createCardElement(card);
+    newCard.addEventListener("click", flipCard, false);
+    cardGroup.appendChild(newCard);
+  })
+
+}())
+
+</script>
