@@ -4,71 +4,104 @@
     <meta name="mobile-web-app-capable" content="yes">
     <style> body {padding: 0; margin: 0;} </style>
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
-<div class="g-game__card-group">
+
+
+
+<div id="board">
 </div>
+<div class="win">you win</div>
+<div id="reset_container">
+  <button id="reset">Reset</button>
+</div>
+
+
 <style>
 
-body {
-
-    background: url(BG.png);
-    background-repeat: no-repeat;
-    background-size: 100%;
+body{
+	width:100%;
+	max-width: 1100px;
+	height: auto;
+	margin:0 auto;
+	background-image: url('BG.png');
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: cover;
 }
-.g-game__card-group {
-/*   border: 10px solid gray; */
-  display: flex;
-  flex-wrap: wrap;
+*{
+	box-sizing: content-box;
 }
-
-/* entire container, keeps perspective */
-.g-game__card-container {
-  padding: 20px;
-	perspective: 1000px;
+h1,h2,h3,h4,h5,h6,p,a{
+	display: block;
+	margin:0;
+	padding:0;
 }
-	.g-game__card-container.flipped
-  .g-game__card {
-		transform: rotateY(180deg);
-	}
-
-.g-game__card-container,
-.g-game__card-image--back,
-.g-game__card-image--front {
-  width: 150px;
-  height: 150px;
+h1.title{
+	text-align: center;
+    color: rgba(255, 255, 255,);
 }
-
-.g-game__card {
-	transition: 0.6s;
-	transform-style: preserve-3d;
-	position: relative;
-
-  background-color: darkgray;
-  width: 160px;
+#board{
+	width:91%;
+	height: auto;
+	min-height: 250px;
+	margin:1% auto;
+	padding:0;
+	overflow: hidden;
 }
-
-.g-game__card-image--back,
-.g-game__card-image--front {
-	backface-visibility: hidden;
+.card{
+  width:160px;
+  height:160px;
+	max-width:160px;
+	max-height:160px;
+  background-image: url('cardBackGround.png');
+  background-repeat: no-repeat;
+	background-position: center;
+	background-size: cover;
+	border-radius: 5px;
+	border:4px solid black;
+	margin:8px 3%;
+	float: left;
+	cursor: pointer;
+}
+.card > img{
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+}
+.card > .active{
+	opacity: 1;
+}
+.win{
+	font-size: 90px;
+	color: #fff;
+	text-align: center;
 	position: absolute;
-	top: 0;
-	left: 0;
+	display: none;
 }
+#reset{
+  margin-left:500px;
 
-.g-game__card-image--back {
-	z-index: 2;
-  border: 5px solid black;
-  -webkit-transform: rotate(0deg);
-	transform: rotateY(0deg);
+	width:400px;
+  height: 200px;
+  background-image: url('buttonBG.png');
+  opacity: 1;
+  background-color: transparent;
+  background-repeat: repeat;
+  background-position: center;
+  background-size: cover;
+	border:white;
+  border-width: thick;
+  font-size: 80px;
+  font-weight: bold;
+	transition: all 0.2s;
+	cursor: pointer;
+  top: 0;
+  left: 0;
 }
-
-.g-game__card-image--front {
-  border: 5px solid black;
-  -webkit-transform: rotate(180deg);
-	transform: rotateY(180deg);
+#reset:hover{
+	transition: all 0.2s;
 }
-
-.matched img {
-  background-image: url("bg.png");
+#reset_container{
+	text-align: center;
 }
 
 
@@ -76,104 +109,126 @@ body {
 
 <script>
 
-(function() { // IIFE
-  var backCard = "cardBackGround.png";
-    var baseCardUrl = "https://s3-us-west-2.amazonaws.com/s.cdpn.io/74196/"
-  	var cards = [
-      { img: "3.png", id: 1},
-      { img: "2.png", id: 2},
-      { img: "4.png", id: 3},
+var num_of_clicks = 0;
+var num_of_matches = 0;
+var score = 0;
+var card1 = "";
+var card2 = "";
+var test1 = "";
+var test2 = "";
+var array = ['2.png','2.png',
+			 '3.png','3.png',
+			 '4.png','4.png',
+     '1.png','1.png',
+   '5.png','5.png',
+ '6.png','6.png',
+'7.png','7.png',
+'8.png','8.png',
+'9.png','9.png',
+'11.png','11.png',
+'12.png','12.png',
+'13.png','13.png',
+'14.png','14.png',
+'15.png','15.png'];
+$(function(){
+	shuffelBoard(array);
+	setBoard(array);
+	stratGame();
+});
+function shuffelBoard(array){
+	 for (let i = array.length; i; i--) {
+        let j = Math.floor(Math.random() * i);
+        [array[i - 1], array[j]] = [array[j], array[i - 1]];
+	}
+}
+function setBoard(array){
+	var newcontent = "";
+	for(var i=0; i<array.length; i++){
+		newcontent += '<div class="card" id="'+i+'">'+
+			'<img src="'+array[i]+'" onmousedown="return false">'+
+		'</div>';
+	}
+	$("#board").html(newcontent);
+}
+function stratGame(){
+	$(".card").click(function(){
+		score++;
+		$(this).children().addClass('active checkMatch');
+		num_of_clicks++;
+		if(num_of_clicks===1)
+		{
 
-    ];
-  var flipCount = 0;
-  var flipSet = [];
+			$(this).children().css("display","block");
+			card1 = $(this).index();
+			test1 = $(this);
+		}
+		if(num_of_clicks===2)
+		{
+			num_of_clicks = 0;
+			$(this).children().css("display","block");
+			card2 = $(this).index();
+			test2 = $(this);
+			checkMatch(card1,card2,test1,test2);
+		}
+	});
+	$("#reset").click(function(){
+			resetGame();
+		});
+}
+function checkMatch(card1,card2,test1,test2){
+	if(array[card1] === array[card2])
+	{
+		num_of_matches+=2;
+		$(test1).off();
+		$(test2).off();
+		checkWin(num_of_matches);
+	}
+	else{
+		setTimeout(function ()
+		{
+		    $(test1).children().removeClass();
+			$(test2).children().removeClass();
+		}, 1000);
 
-  function shuffle(array) {
-    var currentIndex = array.length, temporaryValue, randomIndex;
+	}
+}
 
-    while (0 !== currentIndex) {
-      randomIndex = Math.floor(Math.random() * currentIndex);
-      currentIndex -= 1;
-      temporaryValue = array[currentIndex];
-      array[currentIndex] = array[randomIndex];
-      array[randomIndex] = temporaryValue;
-    }
-    return array;
-  }
-
-  function createCardElement(card) {
-    var cardContainer = document.createElement("div");
-    var cardEl = document.createElement("div");
-    var cardFront = document.createElement("img");
-    var cardBack = document.createElement("img");
-
-    cardContainer.className = "g-game__card-container";
-    cardContainer.dataset.id = card.id;
-    cardContainer.dataset.name = card.name;
-
-    cardEl.className = "g-game__card";
-
-    cardFront.classList.add("g-game__card-image--front");
-    cardFront.src = card.img;
-
-    cardBack.classList.add("g-game__card-image--back");
-    cardBack.src = backCard;
-
-    cardEl.appendChild(cardFront);
-    cardEl.appendChild(cardBack);
-    cardContainer.appendChild(cardEl);
-
-    return cardContainer;
-
-  }
-
-  function flipCard(event) {
-    var elem = event.srcElement.parentElement.parentElement
-    elem.classList.toggle("flipped");
-    flipCount += 1;
-    flipSet.push(elem)
-
-    if (flipCount == 2) {
-      checkMatch();
-    }
-  }
-
-  function checkMatch() {
-    var flipSetCopy = flipSet;
-    flipCount = 0;
-    flipSet = [];
-    if (flipSetCopy[0].dataset.id === flipSetCopy[1].dataset.id && flipSetCopy[0] !== flipSetCopy[1] ) {
-      setTimeout(function(){
-        flipSetCopy.forEach(function(elem) {
-          elem.classList.add('matched');
-          elem.removeEventListener('click', flipCard, false)
-        });
-      }, 1000)
-    } else {
-      setTimeout(function(){
-        flipSetCopy.forEach(function(elem) {
-          elem.classList.toggle("flipped");
-        });
-      }, 1000)
-
-    }
-
-  }
-
-  // execution starts!
-  var cardGroup = document.getElementsByClassName("g-game__card-group")[0];
-
-  firstSet = shuffle(cards);
-  secondSet = shuffle(cards);
-  totalSet = firstSet.concat(secondSet);
-  totalSet = shuffle(totalSet);
-
-  totalSet.forEach(function(card) {
-    var newCard = createCardElement(card);
-    newCard.addEventListener("click", flipCard, false);
-    cardGroup.appendChild(newCard);
-  })
-
-}())
+function checkWin(num_of_matches){
+	if(num_of_matches===array.length)
+	{
+    $(".win").css("display","block");
+    $(".win").html("Your Score : " + score/2);
+    $(".win").css('top', reset);
+    $(".win").css('right', 450);
+	}
+	else return;
+}
+function resetGame(){
+	num_of_clicks = 0;
+	num_of_matches = 0;
+	score = 0;
+	card1 = "";
+	card2 = "";
+	test1 = "";
+	test2 = "";
+	$(".win").css("display","none");
+  array = ['2.png','2.png',
+        '3.png','3.png',
+        '4.png','4.png',
+       '1.png','1.png',
+     '5.png','5.png',
+   '6.png','6.png',
+  '7.png','7.png',
+  '8.png','8.png',
+  '9.png','9.png',
+  '11.png','11.png',
+  '12.png','12.png',
+  '13.png','13.png',
+  '14.png','14.png',
+  '15.png','15.png'];
+	shuffelBoard(array);
+	setBoard(array);
+	stratGame();
+}
 
 </script>
